@@ -50,7 +50,7 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, onUnmounted } from 'vue'
   import { useRoute } from 'vue-router'
   
   const route = useRoute()
@@ -58,10 +58,18 @@
   const tableCount = ref(0)
   const states = ref([])
   const selectedState = ref(null)
+  const refreshInterval = ref(null)
   
   onMounted(async () => {
     await fetchTournament()
     await fetchStates()
+    refreshInterval.value = setInterval(fetchTournament, 1000)
+  })
+  
+  onUnmounted(() => {
+    if (refreshInterval.value) {
+      clearInterval(refreshInterval.value)
+    }
   })
   
   async function fetchTournament() {
@@ -116,9 +124,7 @@
         body: JSON.stringify({ stateId: nextState.id })
       })
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      const updatedTable = await response.json()
-      const tableIndex = tournament.value.tables.findIndex(t => t.id === table.id)
-      tournament.value.tables[tableIndex] = updatedTable
+      // La mise à jour se fera via le rafraîchissement automatique
     } catch (error) {
       console.error('Error updating table state:', error)
     }
@@ -134,8 +140,7 @@
         body: JSON.stringify({ stateId: selectedState.value.id })
       })
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      const updatedTournament = await response.json()
-      tournament.value = updatedTournament
+      // La mise à jour se fera via le rafraîchissement automatique
     } catch (error) {
       console.error('Error updating all table states:', error)
     }
