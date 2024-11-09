@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tournament {
+  id        Int      @id @default(autoincrement())
+  name      String
+  tableCount Int
+  tables    Table[]
+}
+
+model Table {
+  id          Int       @id @default(autoincrement())
+  number      Int
+  stateId     Int
+  state       State @relation(fields: [stateId], references: [id])
+  tournament  Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+}
+
+model State {
+  id          Int       @id @default(autoincrement())
+  name        String
+  color       String
+  tables      Table[]
+}
