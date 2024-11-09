@@ -1,16 +1,24 @@
-# Étape de build
-FROM node:16 as build-stage
+FROM node:18
+
 WORKDIR /app
+
+# Copier les fichiers package.json et package-lock.json
 COPY package*.json ./
+
+# Installer les dépendances
 RUN npm install
+
+# Copier les fichiers du projet
 COPY . .
+
+# Générer le client Prisma
+RUN npx prisma generate
+
+# Construire l'application Nuxt
 RUN npm run build
 
-# Étape de production
-FROM node:16-alpine
-WORKDIR /app
-COPY --from=build-stage /app/.output /app
-ENV NUXT_HOST=0.0.0.0
-ENV NUXT_PORT=3000
+# Exposer le port sur lequel l'application s'exécute
 EXPOSE 3000
-CMD ["node", "/app/server/index.mjs"]
+
+# Définir la commande pour exécuter l'application
+CMD ["npm", "run", "start"]
